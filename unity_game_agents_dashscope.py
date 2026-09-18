@@ -1,7 +1,7 @@
 """
 CrewAI - Orquestração de Time de Agentes para Desenvolvimento de Jogos Unity
 Time composto por: PO (Product Owner), DEV (Engenheiro de Software), QA (Quality Assurance)
-Configurado para usar modelo Qwen
+Configurado para usar modelo Qwen via DashScope (Alibaba Cloud)
 """
 
 from crewai import Agent, Task, Crew, Process
@@ -12,22 +12,24 @@ from dotenv import load_dotenv
 # Carregar variáveis de ambiente
 load_dotenv()
 
-# Configurar LLM para usar Qwen via API compatível com OpenAI
-# Opções:
-# 1. Usar Qwen local via Ollama: http://localhost:11434/v1
-# 2. Usar Qwen via Alibaba Cloud DashScope
-# 3. Usar Qwen via outro provedor compatível
+# Configurar LLM para usar Qwen via Alibaba Cloud DashScope
+DASHSCOPE_API_KEY = os.getenv("DASHSCOPE_API_KEY")
+DASHSCOPE_BASE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1"
+QWEN_MODEL = os.getenv("QWEN_MODEL", "qwen-max")
 
-QWEN_BASE_URL = os.getenv("QWEN_BASE_URL", "http://localhost:11434/v1")
-QWEN_API_KEY = os.getenv("QWEN_API_KEY", "not-needed")  # Para Ollama local
-QWEN_MODEL = os.getenv("QWEN_MODEL", "qwen2.5-coder:32b")
+if not DASHSCOPE_API_KEY:
+    print("⚠️  AVISO: DASHSCOPE_API_KEY não configurada!")
+    print("   Obtenha sua chave em: https://dashscope.console.aliyun.com/")
+    print("   Ou configure no arquivo .env:\n")
+    print("   DASHSCOPE_API_KEY=sua_chave_aqui\n")
+    exit(1)
 
-# Criar instância da LLM
+# Criar instância da LLM usando DashScope
 llm_instance = ChatOpenAI(
     model=QWEN_MODEL,
     temperature=0.7,
-    api_key=QWEN_API_KEY,
-    base_url=QWEN_BASE_URL
+    api_key=DASHSCOPE_API_KEY,
+    base_url=DASHSCOPE_BASE_URL
 )
 
 # ==================== AGENTES ====================
@@ -39,6 +41,9 @@ po_agent = Agent(
     Definir o escopo completo do jogo, incluindo mecânicas, funcionalidades, 
     estilo visual e experiência do jogador. Criar documentação clara e detalhada
     que sirva de base para o desenvolvimento.
+    
+    IMPORTANTE: Se houver ambiguidade ou falta de clareza no conceito do jogo,
+    faça questionamentos específicos para obter esclarecimentos antes de prosseguir.
     """,
     backstory="""
     Você é um Product Owner experiente em desenvolvimento de jogos indie,
@@ -59,6 +64,9 @@ dev_agent = Agent(
     Transformar o escopo definido pelo PO em especificações técnicas detalhadas,
     plano de desenvolvimento e implementação de código C# para Unity.
     Garantir arquitetura limpa, performance e boas práticas.
+    
+    IMPORTANTE: Se houver ambiguidade nas especificações do PO, solicite
+    esclarecimentos antes de implementar.
     """,
     backstory="""
     Você é um engenheiro de software sênior com 10+ anos de experiência em Unity.
@@ -78,6 +86,8 @@ qa_agent = Agent(
     Validar a implementação do DEV comparando com o escopo definido pelo PO.
     Identificar bugs, inconsistências, gaps de funcionalidade e problemas de UX.
     Gerar relatórios de teste claros e acionáveis.
+    
+    IMPORTANTE: Reporte qualquer inconsistência entre escopo e implementação.
     """,
     backstory="""
     Você é um especialista em QA de jogos com foco em Unity. Tem experiência
@@ -133,6 +143,9 @@ def create_scope_task(game_concept: str):
         
         Escreva de forma clara, estruturada e sem ambiguidades para que o 
         engenheiro possa implementar sem dúvidas.
+        
+        SE HOUVER AMBIGUIDADES: Liste as perguntas que precisam ser respondidas
+        antes de prosseguir para a próxima fase.
         """,
         expected_output="""
         Documento de escopo completo do jogo contendo:
@@ -141,6 +154,7 @@ def create_scope_task(game_concept: str):
         - Especificações visuais (Pixel Art HD estilo Magicraft)
         - Lista detalhada de funcionalidades
         - Critérios de aceite claros
+        - (Opcional) Perguntas para esclarecimento de ambiguidades
         """,
         agent=po_agent
     )
@@ -182,6 +196,9 @@ def create_implementation_task():
         - IA de inimigos básicos
         - Sistema de spawn/inimigos
         - UI manager
+        
+        SE HOUVER AMBIGUIDADES: Liste as questões técnicas que precisam de
+        esclarecimento antes de implementar.
         """,
         expected_output="""
         Documento técnico contendo:
@@ -189,6 +206,7 @@ def create_implementation_task():
         - Plano de desenvolvimento por fases
         - Código C# completo dos sistemas principais
         - Instruções de integração no Unity
+        - (Opcional) Questões técnicas para esclarecimento
         """,
         agent=dev_agent,
         context=[]  # Será preenchido com output do PO
@@ -274,6 +292,9 @@ def run_game_dev_crew(game_concept: str):
     print("=" * 60)
     print(f"\nConceito do Jogo: {game_concept}\n")
     print("=" * 60)
+    print(f"Modelo Qwen: {QWEN_MODEL}")
+    print(f"Base URL: {DASHSCOPE_BASE_URL}")
+    print("=" * 60)
     
     result = crew.kickoff()
     
@@ -303,11 +324,6 @@ if __name__ == "__main__":
     """
     
     # Executar o crew
-    print("\n⚠️  CERTIFIQUE-SE DE TER O QWEN CONFIGURADO:")
-    print("   - Opção 1: Ollama local (ollama run qwen2.5-coder:32b)")
-    print("   - Opção 2: API DashScope da Alibaba")
-    print("   - Configure as variáveis no arquivo .env se necessário\n")
-    
     result = run_game_dev_crew(game_concept)
     
     # Exibir resultados
@@ -315,3 +331,4 @@ if __name__ == "__main__":
     print("📋 RESULTADOS COMPLETOS")
     print("=" * 60)
     print(result)
+

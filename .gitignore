@@ -1,4 +1,4 @@
-```
+```gitignore
 # Python
 __pycache__/
 *.pyc
@@ -11,23 +11,27 @@ venv/
 .env.local
 .env.*
 
-# Build artifacts
-dist/
-build/
-*.egg-info/
+# Unity
+Library/
+Temp/
+Obj/
+Build/
+*.csproj
+*.unityproj
+*.sln
+*.userprefs
+*.pidb
+*.meta
+csc.rsp
+.mdb
+.o
+*.cache
+*.log
 
 # Logs
 *.log
 
-# OS generated files
+# OS
 .DS_Store
 Thumbs.db
-
-# Coverage reports
-.coverage
-htmlcov/
-coverage/
-
-# MyPy cache
-.mypy_cache/
 ```
