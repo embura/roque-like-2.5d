@@ -151,7 +151,32 @@ Especialista em QA de jogos com foco em Unity, experiente em testes funcionais, 
 
 - **CrewAI**: Orquestração de agentes autônomos
 - **LangChain**: Integração com LLMs
-- **ChatOpenAI (GPT-4o-mini)**: Modelo de linguagem principal
+- **ChatOpenAI (Compatível)**: Interface para modelos Qwen via API compatível
+
+### Modelo de Linguagem: Qwen
+
+O sistema foi configurado para utilizar o modelo **Qwen** (da série Qwen2.5), oferecendo as seguintes opções de deployment:
+
+#### Opção 1: Ollama Local (Recomendado para Desenvolvimento)
+- **URL Base:** `http://localhost:11434/v1`
+- **Modelo:** `qwen2.5-coder:32b` (ou variantes como `qwen2.5:72b`)
+- **API Key:** `not-needed` (não requer autenticação para uso local)
+- **Vantagens:** Gratuito, roda offline, privacidade total
+- **Instalação:** 
+  ```bash
+  # Instale o Ollama em https://ollama.ai
+  ollama run qwen2.5-coder:32b
+  ```
+
+#### Opção 2: Alibaba Cloud DashScope
+- **URL Base:** `https://dashscope.aliyuncs.com/compatible-mode/v1`
+- **Modelo:** `qwen-max` ou `qwen-plus`
+- **API Key:** Requer cadastro em https://dashscope.console.aliyun.com/
+- **Vantagens:** Alta performance, escalabilidade, modelos mais recentes
+
+#### Opção 3: Outros Provedores Compatíveis
+- Qualquer provedor que ofereça API compatível com OpenAI
+- Configure `QWEN_BASE_URL`, `QWEN_API_KEY` e `QWEN_MODEL` no `.env`
 
 ## Estrutura do Projeto
 
@@ -170,8 +195,18 @@ Especialista em QA de jogos com foco em Unity, experiente em testes funcionais, 
 
 ### Variáveis de Ambiente Necessárias
 
+Configure no arquivo `.env` (copie de `.env.example`):
+
 ```bash
-OPENAI_API_KEY=sua_chave_aqui
+# Para Ollama Local (Recomendado)
+QWEN_BASE_URL=http://localhost:11434/v1
+QWEN_API_KEY=not-needed
+QWEN_MODEL=qwen2.5-coder:32b
+
+# OU para Alibaba Cloud DashScope
+# QWEN_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
+# QWEN_API_KEY=sua_chave_dashscope_aqui
+# QWEN_MODEL=qwen-max
 ```
 
 ---
@@ -184,11 +219,22 @@ OPENAI_API_KEY=sua_chave_aqui
 pip install -r requirements.txt
 ```
 
-### 2. Configurar API Key
+### 2. Configurar Qwen
 
+**Opção A - Ollama Local (Recomendado):**
+```bash
+# Instale o Ollama em https://ollama.ai
+ollama run qwen2.5-coder:32b
+
+# Em outro terminal, configure o .env
+cp .env.example .env
+# Edite .env com as configurações do Ollama (já vem pré-configurado)
+```
+
+**Opção B - Alibaba Cloud DashScope:**
 ```bash
 cp .env.example .env
-# Edite .env e adicione sua OPENAI_API_KEY
+# Edite .env e adicione sua chave da API DashScope
 ```
 
 ### 3. Executar o Crew
@@ -270,6 +316,7 @@ Para adicionar novos agentes ou modificar o fluxo:
 
 ---
 
-**Versão:** 1.0  
+**Versão:** 1.1  
 **Última Atualização:** 2024  
-**Framework:** CrewAI + LangChain + OpenAI GPT-4o-mini
+**Framework:** CrewAI + LangChain + Qwen (via API compatível OpenAI)  
+**Modelos Suportados:** Qwen2.5-Coder (32B, 72B), Qwen-Max, Qwen-Plus
